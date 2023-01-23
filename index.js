@@ -29,47 +29,56 @@ mongoDB.once("open", () => {
   console.log("Connected to MongoDB...".cyan.underline);
 });
 
+//////////////////////////////////////////////////////////////////////////////////////////
+// DEFINING WEBSCRAPER METHOD
+//////////////////////////////////////////////////////////////////////////////////////////
 
+const getData = () => {
+  const url =
+    "https://www.canadavisa.com/express-entry-invitations-to-apply-issued.html";
 
-const url =
-  "https://www.canadavisa.com/express-entry-invitations-to-apply-issued.html";
+  axios(url)
+    .then((response) => {
+      const html = response.data;
+      const $ = cheerio.load(html);
+      let data = [];
 
-axios(url)
-  .then((response) => {
-    const html = response.data;
-    const $ = cheerio.load(html);
-    let data = [];
-
-    $("table", html).each(function () {
-      const tr = $(this)
-        .find("tr")
-        .each(function () {
-          const drawNo = $(this).find("td").eq(0).text();
-          const minimumCRS = $(this).find("td").eq(1).text();
-          const dateOfDraw = $(this).find("td").eq(2).text();
-          const noOfInvites = $(this).find("td").eq(3).text();
-          data.push({
-            drawNo,
-            minimumCRS,
-            dateOfDraw,
-            noOfInvites,
+      $("table", html).each(function () {
+        const tr = $(this)
+          .find("tr")
+          .each(function () {
+            const drawNo = $(this).find("td").eq(0).text();
+            const minimumCRS = $(this).find("td").eq(1).text();
+            const dateOfDraw = $(this).find("td").eq(2).text();
+            const noOfInvites = $(this).find("td").eq(3).text();
+            data.push({
+              drawNo,
+              minimumCRS,
+              dateOfDraw,
+              noOfInvites,
+            });
           });
-        });
+      });
+
+      data = data.filter((data) => data.drawNo > 236);
+      console.log(data);
+      //foreach add make axios request to mongo to post
+    })
+    .catch((err) => () => {
+      // set locals, only providing error in development
+      res.locals.message = err.message;
+      res.locals.error = req.app.get("env") === "development" ? err : {};
+
+      // render the error page
+      res.status(err.status || 500);
+      res.render("error");
     });
+};
 
-    data = data.filter((data) => data.drawNo > 236);
-    console.log(data);
-    //foreach add make axios request to mongo to post
-  })
-  .catch((err) => () => {
-    // set locals, only providing error in development
-    res.locals.message = err.message;
-    res.locals.error = req.app.get("env") === "development" ? err : {};
-
-    // render the error page
-    res.status(err.status || 500);
-    res.render("error");
-  });
+//////////////////////////////////////////////////////////////////////////////////////////
+// EXECUTION MAIN BODY
+//////////////////////////////////////////////////////////////////////////////////////////
+getData();
 
 app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
 
