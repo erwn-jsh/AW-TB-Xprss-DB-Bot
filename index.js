@@ -13,14 +13,13 @@ const colors = require("colors");
 
 // Initialize app with express
 const app = express();
-console.log("App Started...");
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // MONGODB CONFIGURATIONS
 //////////////////////////////////////////////////////////////////////////////////////////
 
 // Define Connect to DB
-const connectDB = async (callback) => {
+function connectDB() {
   // Connect to Mongo
   mongoose.set("strictQuery", false);
   mongoose.connect(process.env.MONGO_URI, {
@@ -30,12 +29,15 @@ const connectDB = async (callback) => {
   let mongoDB = mongoose.connection;
   mongoDB.on("error", () => {
     console.error.bind(console, "DB Connection Error: ");
-    callback();
   });
   mongoDB.once("open", () => {
     console.log("Connected to MongoDB...".cyan.underline);
+
+    // TODO: figure out a way to make getData() callback function
+    // GETTING DATA
+    getData();
   });
-};
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // DEFINING WEBSCRAPER METHOD
@@ -68,15 +70,10 @@ const getData = () => {
           });
       });
 
-      data = data.filter((data) => data.drawNo > 236);
+      data = data.filter((data) => data.drawNo > 237);
+      console.log(data);
 
       //foreach add make axios request to mongo to post
-      const draw = Draw.create({
-        drawNo,
-        minimumCRS,
-        dateOfDraw,
-        noOfInvites,
-      });
     })
     .catch((err) => () => {
       // set locals, only providing error in development
@@ -92,8 +89,10 @@ const getData = () => {
 //////////////////////////////////////////////////////////////////////////////////////////
 // EXECUTION MAIN BODY
 //////////////////////////////////////////////////////////////////////////////////////////
-connectDB(getData());
+console.log("App Started...".yellow);
+connectDB();
 
+// app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
 app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
 
 //TODO: make architecture diagram
