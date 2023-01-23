@@ -7,6 +7,8 @@ const PORT = 8000;
 const axios = require("axios");
 const cheerio = require("cheerio");
 const express = require("express");
+const mongoose = require("mongoose");
+const colors = require("colors");
 
 // Initialize app with express
 const app = express();
@@ -15,15 +17,19 @@ console.log("App Started...");
 //////////////////////////////////////////////////////////////////////////////////////////
 // CONFIGURATIONS
 //////////////////////////////////////////////////////////////////////////////////////////
-// DB Config
-// const DB = "mongodb+srv://santiago:OCIImJVgF3Jb2Ii0@mongodbserver.p6m24.mongodb.net/LEARNT?retryWrites=true&w=majority";
 // Connect to Mongo
-// mongoose.connect(DB, { useNewUrlParser: true, useUnifiedTopology: true });
-// let mongoDB = mongoose.connection;
-// mongoDB.on("error", console.error.bind(console, "DB Connection Error: "));
-// mongoDB.once("open", () => {
-//   console.log("Connected to MongoDB...");
-// });
+mongoose.set("strictQuery", false);
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+let mongoDB = mongoose.connection;
+mongoDB.on("error", console.error.bind(console, "DB Connection Error: "));
+mongoDB.once("open", () => {
+  console.log("Connected to MongoDB...".cyan.underline);
+});
+
+
 
 const url =
   "https://www.canadavisa.com/express-entry-invitations-to-apply-issued.html";
