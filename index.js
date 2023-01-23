@@ -8,6 +8,7 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const express = require("express");
 const mongoose = require("mongoose");
+const Draw = require("./models/drawModel");
 const colors = require("colors");
 
 // Initialize app with express
@@ -15,19 +16,26 @@ const app = express();
 console.log("App Started...");
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// CONFIGURATIONS
+// MONGODB CONFIGURATIONS
 //////////////////////////////////////////////////////////////////////////////////////////
-// Connect to Mongo
-mongoose.set("strictQuery", false);
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-let mongoDB = mongoose.connection;
-mongoDB.on("error", console.error.bind(console, "DB Connection Error: "));
-mongoDB.once("open", () => {
-  console.log("Connected to MongoDB...".cyan.underline);
-});
+
+// Define Connect to DB
+const connectDB = async (callback) => {
+  // Connect to Mongo
+  mongoose.set("strictQuery", false);
+  mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  let mongoDB = mongoose.connection;
+  mongoDB.on("error", () => {
+    console.error.bind(console, "DB Connection Error: ");
+    callback();
+  });
+  mongoDB.once("open", () => {
+    console.log("Connected to MongoDB...".cyan.underline);
+  });
+};
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // DEFINING WEBSCRAPER METHOD
@@ -61,8 +69,14 @@ const getData = () => {
       });
 
       data = data.filter((data) => data.drawNo > 236);
-      console.log(data);
+
       //foreach add make axios request to mongo to post
+      const draw = Draw.create({
+        drawNo,
+        minimumCRS,
+        dateOfDraw,
+        noOfInvites,
+      });
     })
     .catch((err) => () => {
       // set locals, only providing error in development
@@ -78,7 +92,7 @@ const getData = () => {
 //////////////////////////////////////////////////////////////////////////////////////////
 // EXECUTION MAIN BODY
 //////////////////////////////////////////////////////////////////////////////////////////
-getData();
+connectDB(getData());
 
 app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
 

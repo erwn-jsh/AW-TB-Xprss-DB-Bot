@@ -8,20 +8,21 @@ const DrawSchema = new Schema(
       default: Date.now,
     },
     drawNo: {
-      type: Int32,
+      type: Number,
     },
     minimumCRS: {
-      type: Double,
+      type: Number,
     },
     dateOfDraw: {
       type: Date,
     },
     noOfInvitations: {
-      type: Double,
+      type: Number,
     },
   },
   {
     collections: "draws",
+    timestamps: true,
   }
 );
 
