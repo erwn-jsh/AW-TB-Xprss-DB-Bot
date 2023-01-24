@@ -8,6 +8,7 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const express = require("express");
 const mongoose = require("mongoose");
+const asyncHandler = require("express-async-handler");
 const Draw = require("./models/drawModel");
 const colors = require("colors");
 
@@ -19,7 +20,7 @@ const app = express();
 //////////////////////////////////////////////////////////////////////////////////////////
 
 // Define Connect to DB
-function connectDB() {
+const connectDB = () => {
   // Connect to Mongo
   mongoose.set("strictQuery", false);
   mongoose.connect(process.env.MONGO_URI, {
@@ -37,12 +38,11 @@ function connectDB() {
     // GETTING DATA
     getData();
   });
-}
+};
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// DEFINING WEBSCRAPER METHOD
+// DEFINING WEBSCRAPER FUNCTION
 //////////////////////////////////////////////////////////////////////////////////////////
-
 const getData = () => {
   const url =
     "https://www.canadavisa.com/express-entry-invitations-to-apply-issued.html";
@@ -70,10 +70,15 @@ const getData = () => {
           });
       });
 
+      // FILTERING DATA so that online draws from 
+      // 2023 are added
       data = data.filter((data) => data.drawNo > 237);
-      console.log(data);
+      
+      // Inserting Data in MongoDB 
+      insertDraw(data);
 
-      //foreach add make axios request to mongo to post
+
+      //TODO: send tweet
     })
     .catch((err) => () => {
       // set locals, only providing error in development
@@ -87,18 +92,30 @@ const getData = () => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
+// DEFINING CREATE NEW DRAW IN DB FUNCTION
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// TODO: find way to stop it from inserting duplicate docs
+const insertDraw = asyncHandler(async (drawData, res) => {
+  const newDraw = await Draw.create(drawData);
+  if (newDraw) {
+    console.log(newDraw);
+  } else {
+    console.log("ERROR");
+  }
+});
+
+//////////////////////////////////////////////////////////////////////////////////////////
 // EXECUTION MAIN BODY
 //////////////////////////////////////////////////////////////////////////////////////////
 console.log("App Started...".yellow);
-connectDB();
+connectDB(getData());
 
-// app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
 app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
 
 //TODO: make architecture diagram
 //TODO: make 2 express servers
 //TODO: web scraper run locally and run twitter
-//TODO: make mongodb
 //TODO: foreach add make axios request to mongo to post
 //TODO: link with Twitter bot
 //TODO: other to handle display of data; REACT?
