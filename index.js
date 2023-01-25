@@ -9,12 +9,14 @@ const cheerio = require("cheerio");
 const express = require("express");
 const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler");
+const cors = require("cors");
 const colors = require("colors");
 
 const Draw = require("./models/drawModel");
 
 // Initialize app with express
 const app = express();
+app.use(cors());
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // MONGODB CONFIGURATIONS
@@ -110,7 +112,6 @@ const insertDraw = asyncHandler(async (drawData, res) => {
 //////////////////////////////////////////////////////////////////////////////////////////
 console.log("App Started...".yellow);
 connectDB(getData());
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // API ENDPOINT
