@@ -9,8 +9,9 @@ const cheerio = require("cheerio");
 const express = require("express");
 const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler");
-const Draw = require("./models/drawModel");
 const colors = require("colors");
+
+const Draw = require("./models/drawModel");
 
 // Initialize app with express
 const app = express();
@@ -70,13 +71,12 @@ const getData = () => {
           });
       });
 
-      // FILTERING DATA so that online draws from 
+      // FILTERING DATA so that online draws from
       // 2023 are added
       data = data.filter((data) => data.drawNo > 237);
-      
-      // Inserting Data in MongoDB 
-      insertDraw(data);
 
+      // Inserting Data in MongoDB
+      insertDraw(data);
 
       //TODO: send tweet
     })
@@ -106,10 +106,22 @@ const insertDraw = asyncHandler(async (drawData, res) => {
 });
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// EXECUTION MAIN BODY
+// WEBSCRAPER EXECUTION MAIN BODY
 //////////////////////////////////////////////////////////////////////////////////////////
 console.log("App Started...".yellow);
 connectDB(getData());
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// API ENDPOINT
+//////////////////////////////////////////////////////////////////////////////////////////
+app.get(
+  "/",
+  asyncHandler(async (req, res) => {
+    const draws = await Draw.find();
+    res.status(200).json(draws);
+  })
+);
 
 app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
 
